@@ -38,6 +38,12 @@ class IsidoreApiUser implements UserInterface, EquatableInterface
         return $this;
     }
 
+    public function setUsername($username)
+    {
+        $this->username = $username;
+        return $this;
+    }
+
     public function setPassword($password)
     {
         $this->password = $password;
