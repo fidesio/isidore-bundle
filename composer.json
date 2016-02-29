@@ -1,0 +1,42 @@
+{
+  "name": "fidesio/isidore-bundle",
+  "description": "Symfony bundle for Isidore API",
+  "type": "symfony-bundle",
+  "keywords": ["isidore"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Harouna MADI",
+      "email": "harouna.madi@fidesio.com"
+    },
+    {
+      "name": "FIDESIO",
+      "email": "tma@fidesio.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.4.0",
+    "symfony/form": "~2.3|~3.0",
+    "symfony/framework-bundle": "~2.3|~3.0",
+    "symfony/security-bundle": "~2.3|~3.0",
+    "symfony/twig-bundle": "~2.3|~3.0"
+  },
+  "repositories": [{
+    "packagist": false,
+    "type": "package",
+    "package": {
+      "name": "fidesio/isidore-bundle",
+      "version": "1.0.0",
+      "source": {
+        "url": "https://github.com/fidesio/isidore-bundle.git",
+        "type": "git",
+        "reference": ""
+      }
+    }
+  }],
+  "autoload": {
+      "psr-4": {
+          "Fidesio\\IsidoreBundle": ""
+      }
+  }
+}

@@ -1,0 +1,46 @@
+#parameters:
+#    fidesio_isidore.client.url: http://seth.lan/ligueparis/trunk/web/ligueparis_isidore/
+#    fidesio_isidore.client.login: admin
+#    fidesio_isidore.client.password: admin
+
+services:
+    fidesio_isidore.service.cryptology:
+        class: Fidesio\IsidoreBundle\Services\Cryptology
+
+    fidesio_isidore.service.auth:
+        class: Fidesio\IsidoreBundle\Services\Auth
+        arguments:
+            - @service_container
+            - @monolog.logger.fidesio_isidore
+
+    fidesio_isidore.service.client:
+        class: Fidesio\IsidoreBundle\Services\Client
+        arguments:
+            - @service_container
+            - @monolog.logger.fidesio_isidore
+
+    fidesio_isidore.store_repository:
+        class: Fidesio\IsidoreBundle\ORM\StoreRepository
+        arguments:
+            - @fidesio_isidore.service.client
+
+    fidesio_isidore.store_manager:
+        class: Fidesio\IsidoreBundle\ORM\StoreManager
+        arguments:
+            - @fidesio_isidore.service.client
+
+    fidesio_isidore.api_user_provider:
+        class: Fidesio\IsidoreBundle\Security\User\IsidoreApiUserProvider
+        arguments:
+            - @service_container
+
+    fidesio_isidore.authenticator:
+        class: Fidesio\IsidoreBundle\Security\IsidoreAuthenticator
+        arguments: ["@security.password_encoder"]
+
+    fidesio_isidore.service.cache:
+        class: Fidesio\IsidoreBundle\Services\Cache
+        arguments:
+            ["%kernel.root_dir%/cache/%kernel.environment%/isidore"]
+
+
