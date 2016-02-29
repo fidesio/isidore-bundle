@@ -41,7 +41,10 @@ class IsidoreApiUserProvider implements UserProviderInterface
             $userData = $this->container->get('fidesio_isidore.service.auth')->getUserData();
             $apiUsername = $this->container->getParameter('fidesio_isidore.client.login');
 
-            if(empty($userData) || @$userData['username'] == $apiUsername){
+            if(
+                empty($userData) ||
+                (isset($userData['username']) && ($userData['username'] == $apiUsername || @$userData['username'] != $username))
+            ){
                 $auth = $this->container->get('fidesio_isidore.service.auth')->authentify($username, $password);
                 $userData = $auth->getUserData();
             }
@@ -69,7 +72,6 @@ class IsidoreApiUserProvider implements UserProviderInterface
                 sprintf('Instances of "%s" are not supported.', get_class($user))
             );
         }
-
         return $this->loadUser($user->getUsername(), $user->getPassword());
     }
 
