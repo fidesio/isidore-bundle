@@ -21,19 +21,6 @@
     "symfony/security-bundle": "~2.3|~3.0",
     "symfony/twig-bundle": "~2.3|~3.0"
   },
-  "repositories": [{
-    "packagist": false,
-    "type": "package",
-    "package": {
-      "name": "fidesio/isidore-bundle",
-      "version": "1.0.0",
-      "source": {
-        "url": "https://github.com/fidesio/isidore-bundle.git",
-        "type": "git",
-        "reference": ""
-      }
-    }
-  }],
   "autoload": {
       "psr-4": {
           "Fidesio\\IsidoreBundle": ""
