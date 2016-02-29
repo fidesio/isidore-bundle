@@ -1,3 +1,0 @@
-fidesio_isidore_debug:
-    path:     /isidore_debug
-    defaults: { _controller: FidesioIsidoreBundle:Debug:index }
