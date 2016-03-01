@@ -118,7 +118,7 @@ class Auth
         }
 
         if(!isset($authUser['success']) || $authUser['success'] != true){
-            throw new Exception('Identification failed.');
+            throw new Exception("Le serveur d'authentification ne répond pas. Veuillez reessayer ulterieurement.");
         }
 
         $session->set('isidore.auth.userData', $authUser);
