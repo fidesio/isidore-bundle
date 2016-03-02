@@ -92,6 +92,18 @@ class Client
         return $this;
     }
 
+    public function setLastRequest($lastRequest)
+    {
+        $this->lastRequest = $lastRequest;
+        return $this;
+    }
+
+    public function setLastResponse($lastResponse)
+    {
+        $this->lastResponse = $lastResponse;
+        return $this;
+    }
+
     public function getLastRequest()
     {
         return $this->lastRequest;
@@ -167,12 +179,12 @@ class Client
         $this->lastRequest = $info['request'];
         $this->lastResponse = $info['response'];
 
-//        if($info['response']['http_code'] != '200'){
-//            $this->logger->critical('Request failed');
-//
-//            if($this->debug)
-//                throw new Exception('Request failed.');
-//        }
+        if($info['response']['http_code'] != '200'){
+            $this->logger->critical('CURL Request failed');
+
+            if($this->debug)
+                throw new Exception('CURL Request failed.');
+        }
 
         curl_close($ch);
 
@@ -189,7 +201,7 @@ class Client
      * @param $addToken
      * @return void
      */
-    protected function buildURL(&$url, &$getData, $postData, $addToken = true)
+    public function buildURL(&$url, &$getData, $postData, $addToken = true)
     {
         $authService = $this->getAuth();
         $url = $this->baseURL . $url;
@@ -206,7 +218,11 @@ class Client
                 if(empty($postData)){
                     $hash = sha1('GET' . $queryURL);
                 }else{
-                    $hash = sha1('POST' . $queryURL) . sha1(json_encode($postData));
+                    if ($postData['|file[]']) {
+                        $hash = sha1('POST' . $queryURL);
+                    } else {
+                        $hash = sha1('POST' . $queryURL) . sha1(json_encode($postData));
+                    }
                 }
                 $getData[$authService->getTokenName()] .= $authService->getTokenDelimiter() .
                     $authService->getCryptology()->sha1Sign($hash, $authService->getCredential());

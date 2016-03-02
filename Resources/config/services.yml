@@ -29,6 +29,11 @@ services:
         arguments:
             - @fidesio_isidore.service.client
 
+    fidesio_isidore.file_manager:
+            class: Fidesio\IsidoreBundle\Service\FileManager
+            arguments:
+                - @service_container
+
     fidesio_isidore.api_user_provider:
         class: Fidesio\IsidoreBundle\Security\User\IsidoreApiUserProvider
         arguments:
