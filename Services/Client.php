@@ -22,7 +22,7 @@ class Client
     protected $lastResponse = null;
 
     /**
-     * @var \Symfony\Component\DependencyInjection\Container
+     * @var ContainerInterface
      */
     protected $container;
 
@@ -54,7 +54,7 @@ class Client
     }
 
     /**
-     * @return \Symfony\Component\DependencyInjection\Container|ContainerInterface
+     * @return ContainerInterface
      */
     public function getContainer()
     {
@@ -180,10 +180,10 @@ class Client
         $this->lastResponse = $info['response'];
 
         if($info['response']['http_code'] != '200'){
-            $this->logger->critical('CURL Request failed');
+            $this->logger->critical('CURL Request failed: '.$url);
 
             if($this->debug)
-                throw new Exception('CURL Request failed.');
+                throw new Exception('CURL Request failed. See logs for more info.');
         }
 
         curl_close($ch);
