@@ -218,7 +218,7 @@ class Client
                 if(empty($postData)){
                     $hash = sha1('GET' . $queryURL);
                 }else{
-                    if ($postData['|file[]']) {
+                    if (isset($postData['|file[]']) && $postData['|file[]']) {
                         $hash = sha1('POST' . $queryURL);
                     } else {
                         $hash = sha1('POST' . $queryURL) . sha1(json_encode($postData));
