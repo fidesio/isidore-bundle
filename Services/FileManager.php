@@ -10,7 +10,6 @@
 namespace Fidesio\IsidoreBundle\Services;
 
 use Fidesio\IsidoreBundle\Component\Exception\CurlException;
-use Monolog\Logger;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Serializer\Exception\RuntimeException as Exception;
 use Fidesio\IsidoreBundle\Services\Client;
