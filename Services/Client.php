@@ -180,10 +180,13 @@ class Client
         $this->lastResponse = $info['response'];
 
         if($info['response']['http_code'] != '200'){
-            $this->logger->critical('CURL Request failed: '.$url);
-
-            if($this->debug)
-                throw new Exception('CURL Request failed. See logs for more info.');
+            $message = "CURL Request failed: ";
+            $message .= isset($info['response']['data']['exception']['message']) ?
+                $info['response']['data']['exception']['message'] : $url;
+            $this->logger->critical($message);
+            if($this->debug) {
+                throw new Exception($message);
+            }
         }
 
         curl_close($ch);
