@@ -170,11 +170,12 @@ class StoreRepository implements StoreRepositoryInterface, StoreInterface
      * Finds a single object by a set of criteria.
      *
      * @param array $criteria The criteria.
+     * @param array|null $orderBy
      * @return array|object
      */
-    public function findOneBy(array $criteria)
+    public function findOneBy(array $criteria, array $orderBy = null)
     {
-        return $this->find($criteria, null, 1);
+        return $this->find($criteria, $orderBy, 1);
     }
 
     public function getResult()
