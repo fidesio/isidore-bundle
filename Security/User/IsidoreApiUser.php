@@ -12,15 +12,15 @@ namespace Fidesio\IsidoreBundle\Security\User;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\EquatableInterface;
 
-class IsidoreApiUser implements UserInterface, EquatableInterface
+class IsidoreApiUser implements IsidoreApiUserInterface, UserInterface, EquatableInterface
 {
 
-    private $id;
-    private $email;
-    private $username;
-    private $password;
-    private $roles;
-    private $preferences;
+    protected $id;
+    protected $email;
+    protected $username;
+    protected $password;
+    protected $roles;
+    protected $preferences;
 
     public function __construct(array $userData = [])
     {
