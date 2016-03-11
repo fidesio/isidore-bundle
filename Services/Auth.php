@@ -23,11 +23,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface,
 class Auth
 {
 
-
     protected $login;
     protected $password;
     protected $lastRequest = null;
     protected $lastResponse = null;
+	
 
     /**
      * @var \Symfony\Component\DependencyInjection\Container
@@ -150,7 +150,7 @@ class Auth
         $session = $this->container->get('session');
         $session->set('isidore.auth.data', null);
         $session->set('isidore.auth.userData', null);
-        $this->getClient()->operate('controller/Fidesio.controller.Authentification--logout');
+        //$this->getClient()->operate('controller/Fidesio.controller.Authentification--logout');
 
         return $this;
     }
