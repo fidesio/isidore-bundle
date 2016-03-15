@@ -9,6 +9,7 @@
 
 namespace Fidesio\IsidoreBundle\ORM;
 
+use Cake\Utility\Hash;
 use Fidesio\IsidoreBundle\Services\Client;
 use Symfony\Component\Serializer\Exception\RuntimeException as Exception;
 
@@ -98,9 +99,7 @@ class StoreRepository implements StoreRepositoryInterface, StoreInterface
 
         if (!empty($criteria)) {
             foreach ($criteria as $property => $value) {
-                if ($this->getManager()->checkProperty($property, $value, true)) {
-                    $filters[] = ['property' => $property, 'value' => $value];
-                }
+                $filters[] = $this->_prepareFilter($property, $value);
             }
 
             if (!empty($filters)) {
@@ -137,6 +136,71 @@ class StoreRepository implements StoreRepositoryInterface, StoreInterface
         $this->_result = $this->operate('read', $query);
 
         return $this;
+    }
+
+    /**
+     * @param string $property
+     * @param string|array $value
+     * @return array
+     */
+    protected function _prepareFilter($property, $value)
+    {
+        $filter = [];
+        $comparisons = ['eq', 'seq', 'neq', 'gt', 'ge', 'gte', 'lt', 'le', 'lte', 'ct', 'sw', 'nct', 'ew', 'in', 'nin'];
+
+        if (is_array($value) && !Hash::numeric(array_keys($value))) {
+            foreach ($value as $comparison => $_value) {
+                if (in_array($comparison, ['in', 'nin'])) { // IN or NOT IN
+                    $filter = [
+                        'property' => $property,
+                        'value' => $this->_checkPropertyArrayValue($property, is_array($_value) ? $_value : [$_value]),
+                        'comparison' => $comparison,
+                    ];
+                } elseif (in_array($comparison, $comparisons)) { // OTHER CLAUSE
+                    if ($this->getManager()->checkProperty($property, $_value, true)) {
+                        $filter = [
+                            'property' => $property,
+                            'value' => $_value,
+                            'comparison' => $comparison,
+                        ];
+                    }
+                } else {
+                    if ($this->_client->isDebugMode()) {
+                        throw new Exception("La clause \"$comparison\" n'existe pas");
+                    }
+                }
+            }
+        } elseif (is_array($value)) { // IN
+            $filter = [
+                'property' => $property,
+                'value' => $this->_checkPropertyArrayValue($property, $value),
+            ];
+        } else { // EQUAL
+            if ($this->getManager()->checkProperty($property, $value, true)) {
+                $filter = [
+                    'property' => $property,
+                    'value' => $value,
+                ];
+            }
+        }
+
+        return $filter;
+    }
+
+    /**
+     * @param string $property
+     * @param array $value
+     * @return array
+     */
+    protected function _checkPropertyArrayValue($property, array $value = [])
+    {
+        $values = array_map(function ($v) use ($property) {
+            if ($this->getManager()->checkProperty($property, $v, true)) {
+                return $v;
+            }
+        }, $value);
+
+        return $values;
     }
 
     /**
@@ -208,7 +272,7 @@ class StoreRepository implements StoreRepositoryInterface, StoreInterface
         if ($this->getTotal()) {
             foreach ($this->_result['data'] as $row) {
                 if (isset($row[$key]) && isset($row[$displayField])) {
-                    switch($type){
+                    switch ($type) {
                         case 'simple':
                             $choices[] = $row[$displayField];
                             break;
