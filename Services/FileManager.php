@@ -99,9 +99,8 @@ class FileManager
 
         curl_close($ch);
 
-        $response_data = json_decode($res[2], true);
-        $response_data = $response_data['data'][0]['data'];
+        $jsonData = json_decode($res[2], true);
 
-        return $response_data;
+        return isset($jsonData['data'][0]) ? $jsonData['data'][0] : null;
     }
 }
