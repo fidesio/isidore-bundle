@@ -45,15 +45,20 @@ class FileManager
 
     /**
      * @param $filepath
+     * @param string|null $type set mime type
      * @return mixed
-     * @throws Exception
      */
-    public function send($filepath)
+    public function send($filepath, $type = null)
     {
+        if(empty($type)){
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            $type = $finfo->file($filepath);
+        }
+
         $getData = array();
         $url = 'upload/';
         $postData = array(
-            '|file[]' => '@' . $filepath
+            '|file[]' => '@' . $filepath . ";type=".trim($type, ';').";"
         );
         $addToken = true;
 
