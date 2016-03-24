@@ -185,6 +185,7 @@ class Client
                 $info['response']['data']['exception']['message'] : $url;
             $this->logger->critical($message);
             if($this->debug) {
+                dump($info);
                 throw new Exception($message);
             }
         }
