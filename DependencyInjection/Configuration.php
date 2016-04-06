@@ -27,6 +27,8 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('url')->end()
                         ->scalarNode('login')->end()
                         ->scalarNode('password')->end()
+                        ->scalarNode('auth_basic_user')->end()
+                        ->scalarNode('auth_basic_pass')->end()
                     ->end()
                 ->end()
             ->end()
