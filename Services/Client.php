@@ -186,8 +186,8 @@ class Client
             CURLINFO_HEADER_OUT => true,
             CURLOPT_HEADER => true,
         ));
-        if(!empty($this->getBasicAuthUser()) && !empty($this->getBasicAuthUser())) {
-            curl_setopt($ch, CURLOPT_USERPWD, $this->getBasicAuthUser() . ":" . $this->getBasicAuthPass());
+        if($this->getAuthBasicUser() && $this->getAuthBasicPass()){
+            curl_setopt($ch, CURLOPT_USERPWD, $this->getAuthBasicUser() . ":" . $this->getAuthBasicPass());
         }
 
         if(!empty($postData))

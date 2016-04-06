@@ -43,6 +43,6 @@ fidesio_isidore:
         url: http://url.to.isidore.app # Isidore URL
         login: api_login # Isidore login
         password: api_password # Isidore api password
-        auth_basic_user: auth_basic_user # Application Basic Authorization `user` if needed
-        auth_basic_pass: auth_basic_pass # Application Basic Authorization `password` if needed
+        auth_basic_user: auth_basic_user # Application Basic Authorization `user` if needed / not required
+        auth_basic_pass: auth_basic_pass # Application Basic Authorization `password` if needed / not required
 ```
