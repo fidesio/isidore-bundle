@@ -17,6 +17,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface,
 class Client
 {
     protected $baseURL;
+    protected $authBasicUser;
+    protected $authBasicPass;
     protected $stores = array();
     protected $lastRequest = null;
     protected $lastResponse = null;
@@ -42,6 +44,8 @@ class Client
         $this->container = $container;
         $this->logger = $logger;
         $this->baseURL = $this->container->getParameter('fidesio_isidore.client.url');
+        $this->authBasicUser = $this->container->getParameter('fidesio_isidore.client.auth_basic_user');
+        $this->authBasicPass = $this->container->getParameter('fidesio_isidore.client.auth_basic_pass');
         $this->debug = $this->container->getParameter('kernel.debug');
     }
 
@@ -115,6 +119,38 @@ class Client
     }
 
     /**
+     * @return string
+     */
+    public function getAuthBasicUser()
+    {
+        return $this->authBasicUser;
+    }
+
+    /**
+     * @param string $authBasicUser
+     */
+    public function setAuthBasicUser($authBasicUser)
+    {
+        $this->authBasicUser = $authBasicUser;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAuthBasicPass()
+    {
+        return $this->authBasicPass;
+    }
+
+    /**
+     * @param string $authBasicPass
+     */
+    public function setAuthBasicPass($authBasicPass)
+    {
+        $this->authBasicPass = $authBasicPass;
+    }
+
+    /**
      * @param $url
      * @param array $getData
      * @param array $postData
@@ -150,6 +186,9 @@ class Client
             CURLINFO_HEADER_OUT => true,
             CURLOPT_HEADER => true,
         ));
+        if(!empty($this->getBasicAuthUser()) && !empty($this->getBasicAuthUser())) {
+            curl_setopt($ch, CURLOPT_USERPWD, $this->getBasicAuthUser() . ":" . $this->getBasicAuthPass());
+        }
 
         if(!empty($postData))
             curl_setopt_array($ch, array(
@@ -186,6 +225,7 @@ class Client
             $this->logger->critical($message);
             if($this->debug) {
                 dump($info);
+                curl_close($ch);
                 throw new Exception($message);
             }
         }
