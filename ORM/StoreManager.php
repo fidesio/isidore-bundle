@@ -237,7 +237,7 @@ class StoreManager implements StoreInterface
         if(isset($res['data']))
             return $res['data'];
         if(isset( $res['exception']['message']))
-            throw new Exception($res['exception']['message']);
+            throw new Exception($res['exception']['message'], (isset($res['exception']['code'])? (int) $res['exception']['code'] : 0));
 
         return null;
     }

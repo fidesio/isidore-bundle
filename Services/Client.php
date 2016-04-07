@@ -12,7 +12,7 @@ namespace Fidesio\IsidoreBundle\Services;
 use Symfony\Component\DependencyInjection\ContainerInterface,
     Symfony\Component\Serializer\Exception\RuntimeException as Exception,
     Monolog\Logger
-;
+    ;
 
 class Client
 {
@@ -199,6 +199,8 @@ class Client
 
         $res = explode("\r\n\r\n", curl_exec($ch));
 
+        $data = json_decode($res[1], true);
+
         $info = curl_getinfo($ch);
 
         $info = array(
@@ -211,7 +213,7 @@ class Client
             'response' => array(
                 'header' => $res[0],
                 'http_code' => $info['http_code'],
-                'data' => json_decode($res[1], true)
+                'data' => $data
             ),
         );
 
@@ -219,20 +221,30 @@ class Client
         $this->lastResponse = $info['response'];
 
         if($info['response']['http_code'] != '200'){
-            $message = "CURL Request failed: ";
-            $message .= isset($info['response']['data']['exception']['message']) ?
-                $info['response']['data']['exception']['message'] : $url;
+            $message = (isset($data['exception']['message']) ? $data['exception']['message'] : "CURL Request failed: " . $url);
+            $code = isset($data['exception']['code']) ? $data['exception']['code'] : 0;
             $this->logger->critical($message);
             if($this->debug) {
                 dump($info);
                 curl_close($ch);
-                throw new Exception($message);
+                throw new Exception($message, $code);
+            }
+        }
+
+        // Actuellement les contrôleurs s'attendent à ce que la propriété 'error' contienne le message d'erreur
+        // et que la propriété 'code' contienne le code de l'exception.
+        if(isset($data['exception'])) {
+            if(!isset($data['error'])) {
+                $data['error'] = $data['exception']['message'];
+            }
+            if(!isset($data['code'])) {
+                $data['code'] = $data['exception']['code'];
             }
         }
 
         curl_close($ch);
 
-        return json_decode($res[1], true);
+        return $data;
 
     }
 
