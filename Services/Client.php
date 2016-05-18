@@ -265,7 +265,7 @@ class Client
         $queryURL = $url2;
 
         if(!empty($getData))
-            $queryURL .= '?' . http_build_query($getData, '', '&');
+            $queryURL .= '?' . http_build_query($getData, '', '&', PHP_QUERY_RFC3986);
 
         if($authService->getTokenName() !== null && $authService->getTokenDelimiter() !== null && $authService->getUuid() !== null){
             $getData[$authService->getTokenName()] = $authService->getUuid();
@@ -285,7 +285,7 @@ class Client
 
             }
 
-            $queryURL = $url . '?' . http_build_query($getData, '', '&');
+            $queryURL = $url . '?' . http_build_query($getData, '', '&', PHP_QUERY_RFC3986);
         }
 
         $url = $queryURL;
