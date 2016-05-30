@@ -48,6 +48,7 @@ class Error
     const ERR_INFO_CONNEX_ABSENTE		= 200;
     const ERR_EXECUTION_SQL        		= 201;
     const ERR_FICHIER_INTROUVABLE  		= 202;
-    const ERR_MAJ_POINTE_VERROU         = 600; // Modification interdite sur un enrg pointé
-    const ERR_SUP_POINTE_VERROU         = 601; // Suppression interdite sur un enrg pointé
+    const INVALID_CREDENTIAL            = 403;
+    const ERR_MAJ_POINTE_VERROU         = 600;      // Modification interdite sur un enrg pointé
+    const ERR_SUP_POINTE_VERROU         = 601;      // Suppression interdite sur un enrg pointé
 }
