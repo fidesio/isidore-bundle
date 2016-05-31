@@ -315,7 +315,7 @@ class Auth
             return false;
         } else {
             $expireAt = DateTime::createFromFormat(
-                'Y-m-d G:i:s.u',
+                'Y-m-d G:i:s',
                 $authUser['credential']['expire_at']['date']
             );
             $now = new DateTime();
