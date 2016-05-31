@@ -13,8 +13,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface,
     Symfony\Component\Serializer\Exception\RuntimeException as Exception,
     Fidesio\IsidoreBundle\Component\Exception\CurlException,
     Monolog\Logger,
-    Cake\Utility\Inflector;
-;
+    Cake\Utility\Inflector,
+    DateTime
+    ;
 
 /**
  * Class Auth
@@ -27,7 +28,7 @@ class Auth
     protected $password;
     protected $lastRequest = null;
     protected $lastResponse = null;
-	
+
 
     /**
      * @var \Symfony\Component\DependencyInjection\Container
@@ -119,6 +120,10 @@ class Auth
 
         if(!isset($authUser['success']) || $authUser['success'] != true){
             throw new Exception("Le serveur d'authentification ne répond pas. Veuillez reessayer ulterieurement.");
+        }
+
+        if (isset($authUser['permissions'])) {
+            unset($authUser['permissions']);
         }
 
         $session->set('isidore.auth.userData', $authUser);
@@ -300,7 +305,22 @@ class Auth
     public function isAuthenticated()
     {
         $session = $this->container->get('session');
-        return ($session->has('isidore.auth.userData') && $session->get('isidore.auth.userData') !== null);
+//        return ($session->has('isidore.auth.userData') && $session->get('isidore.auth.userData') !== null);
+        if (!$session->has('isidore.auth.userData')
+            || ($authUser = $session->get('isidore.auth.userData')) == null) {
+            return false;
+        } else if (!isset($authUser['credential'],
+            $authUser['credential']['expire_at'],
+            $authUser['credential']['expire_at']['date'])) {
+            return false;
+        } else {
+            $expireAt = DateTime::createFromFormat(
+                'Y-m-d G:i:s.u',
+                $authUser['credential']['expire_at']['date']
+            );
+            $now = new DateTime();
+            return ($expireAt->getTimestamp() > $now->getTimestamp());
+        }
     }
 
 }

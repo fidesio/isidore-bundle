@@ -1,19 +1,17 @@
 <?php
-/**
- * Client.php
- * By FIDESIO <http://wwww.fidesio.com> <contact@fidesio.com>
- * Agence Digitale & Technique
- *
- * @author Harouna MADI <harouna.madi@fidesio.com>
- */
 
 namespace Fidesio\IsidoreBundle\Services;
 
 use Symfony\Component\DependencyInjection\ContainerInterface,
     Symfony\Component\Serializer\Exception\RuntimeException as Exception,
-    Monolog\Logger
+    Monolog\Logger,
+    Fidesio\IsidoreBundle\Component\Curl\Response
     ;
 
+/**
+ * Class Client
+ * @package Fidesio\IsidoreBundle\Services
+ */
 class Client
 {
     protected $baseURL;
@@ -197,9 +195,14 @@ class Client
                 CURLOPT_HTTPHEADER => array('Content-Type: application/json', 'Expect:'),
             ));
 
-        $res = explode("\r\n\r\n", curl_exec($ch));
+//        $res = explode("\r\n\r\n", curl_exec($ch));
 
-        $data = json_decode($res[1], true);
+        $response = new Response(
+            curl_exec($ch)
+        );
+
+//        $data = json_decode($res[1], true);
+        $data = $response->getData();
 
         $info = curl_getinfo($ch);
 
@@ -211,7 +214,8 @@ class Client
                 'content_type' => $info['content_type']
             ),
             'response' => array(
-                'header' => $res[0],
+//                'header' => $res[0],
+                'header' => $response->headers->all(),
                 'http_code' => $info['http_code'],
                 'data' => $data
             ),
@@ -219,13 +223,12 @@ class Client
 
         $this->lastRequest = $info['request'];
         $this->lastResponse = $info['response'];
-
-        if($info['response']['http_code'] != '200'){
+        if ($info['response']['http_code'] != '200') {
             $message = (isset($data['exception']['message']) ? $data['exception']['message'] : "CURL Request failed: " . $url);
             $code = isset($data['exception']['code']) ? $data['exception']['code'] : 0;
             $this->logger->critical($message);
             if($this->debug) {
-                dump($info);
+//                dump($info);
                 curl_close($ch);
                 throw new Exception($message, $code);
             }
