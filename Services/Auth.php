@@ -1,11 +1,4 @@
 <?php
-/**
- * Auth.php
- * By FIDESIO <http://wwww.fidesio.com> <contact@fidesio.com>
- * Agence Digitale & Technique
- *
- * @author Harouna MADI <harouna.madi@fidesio.com>
- */
 
 namespace Fidesio\IsidoreBundle\Services;
 
@@ -14,7 +7,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface,
     Fidesio\IsidoreBundle\Component\Exception\CurlException,
     Monolog\Logger,
     Cake\Utility\Inflector,
-    DateTime
+    DateTime,
+    DateTimeZone,
+    DateInterval
     ;
 
 /**
@@ -122,8 +117,19 @@ class Auth
             throw new Exception("Le serveur d'authentification ne répond pas. Veuillez reessayer ulterieurement.");
         }
 
-        if (isset($authUser['permissions'])) {
-            unset($authUser['permissions']);
+        if (isset($authUser['permissions'], $authUser['preferences'])) {
+            unset($authUser['permissions'], $authUser['preferences']);
+        }
+
+        if (isset($authUser['credential'],
+            $authUser['credential']['expire_at'])) {
+            $authUser['expire_at'] = DateTime::__set_state(
+                $authUser['credential']['expire_at']
+            );
+            unset($authUser['credential']);
+        } else {
+            $authUser['expire_at'] = new DateTime();
+            $authUser['expire_at']->add(new DateInterval('P1D'));
         }
 
         $session->set('isidore.auth.userData', $authUser);
@@ -305,21 +311,15 @@ class Auth
     public function isAuthenticated()
     {
         $session = $this->container->get('session');
-//        return ($session->has('isidore.auth.userData') && $session->get('isidore.auth.userData') !== null);
         if (!$session->has('isidore.auth.userData')
             || ($authUser = $session->get('isidore.auth.userData')) == null) {
             return false;
-        } else if (!isset($authUser['credential'],
-            $authUser['credential']['expire_at'],
-            $authUser['credential']['expire_at']['date'])) {
+        } else if (!isset($authUser['expire_at'])) {
             return false;
         } else {
-            $expireAt = DateTime::createFromFormat(
-                'Y-m-d G:i:s',
-                $authUser['credential']['expire_at']['date']
-            );
             $now = new DateTime();
-            return ($expireAt->getTimestamp() > $now->getTimestamp());
+            /** @var DateTime $authUser['expire_at'] */
+            return ($authUser['expire_at']->getTimestamp() > $now->getTimestamp());
         }
     }
 
