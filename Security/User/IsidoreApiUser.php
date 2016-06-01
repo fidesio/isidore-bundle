@@ -20,7 +20,7 @@ class IsidoreApiUser implements IsidoreApiUserInterface, UserInterface, Equatabl
     protected $username;
     protected $password;
     protected $roles;
-    protected $preferences;
+//    protected $preferences;
 
     public function __construct(array $userData = [])
     {
@@ -29,7 +29,7 @@ class IsidoreApiUser implements IsidoreApiUserInterface, UserInterface, Equatabl
         $this->username = isset($userData['username']) ? $userData['username'] : null;
         $this->password = isset($userData['password']) ? $userData['password'] : null;
         $this->roles = isset($userData['roles']) ? $userData['roles'] : null;
-        $this->preferences = isset($userData['preferences']) ? $userData['preferences'] : null;
+//        $this->preferences = isset($userData['preferences']) ? $userData['preferences'] : null;
     }
 
     public function setEmail($email)
@@ -60,10 +60,10 @@ class IsidoreApiUser implements IsidoreApiUserInterface, UserInterface, Equatabl
         return $this->email;
     }
 
-    public function getPreference()
-    {
-        return $this->preferences;
-    }
+//    public function getPreference()
+//    {
+//        return $this->preferences;
+//    }
 
     public function getRoles()
     {

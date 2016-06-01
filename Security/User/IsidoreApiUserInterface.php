@@ -23,6 +23,6 @@ interface IsidoreApiUserInterface
 
     public function getEmail();
 
-    public function getPreference();
+//    public function getPreference();
 
 }

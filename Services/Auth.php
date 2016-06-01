@@ -193,7 +193,7 @@ class Auth
             'password' => $data['password'],
             'email' => $data['email'],
             'roles' => $roles,
-            'preferences' => $data['preferences'],
+//            'preferences' => $data['preferences'],
         ];
 
         return $userData;
