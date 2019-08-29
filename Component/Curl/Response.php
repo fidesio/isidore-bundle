@@ -11,53 +11,49 @@ use Symfony\Component\HttpFoundation\Response as sfResponse;
 class Response extends sfResponse
 {
     /**
-     * @var mixed
+     * @var array
      */
-    protected $data;
+    protected $data = null;
 
     /**
      * Constructor.
      *
      * @param mixed $content The response content, see setContent()
-     * @param int   $status  The response status code
+     * @param int   $status The response status code
      * @param array $headers An array of response headers
      *
      * @throws \InvalidArgumentException When the HTTP status code is not valid
      */
-    public function __construct($content = '', $status = 200, $headers = [])
+    public function __construct($content = '', $status = self::HTTP_OK, $headers = [])
     {
-        $res = explode("\r\n\r\n", $content);
+        if (!empty($content)) {
+            $res = explode("\r\n\r\n", $content);
 
-        $rawHeaders = explode("\r\n", $res[0]);
+            $rawHeaders = explode("\r\n", $res[0]);
 
-        if(isset($rawHeaders[0]) && preg_match('@\s([0-9]{3})\s@', $rawHeaders[0], $matches)) {
-            $status = (int) $matches[1];
+            if (isset($rawHeaders[0]) && preg_match('@\s(\d{3})\s@', $rawHeaders[0], $matches)) {
+                $status = (int)$matches[1];
+            }
+
+            $protocolVersion = '1.' . ((isset($rawHeaders[0]) && preg_match('@HTTP\/1\.([0-1]{1})@si', $rawHeaders[0], $m)) ? $m[1] : '0');
+
+            $headers = $this->parseRawHeaders($rawHeaders);
+
+            $rawContent = $res[1];
+
+            parent::__construct($rawContent, $status, $headers);
+
+            $this->setProtocolVersion($protocolVersion);
         }
 
-        $protocolVersion = (
-            '1.'
-            . (
-            (isset($rawHeaders[0]) && preg_match('@HTTP\/1\.([0-1]{1})@si', $rawHeaders[0], $m)) ?
-                $m[1] : '0'
-            )
-        );
-
-        $headers = $this->parseRawHeaders($rawHeaders);
-
-        $rawContent = $res[1];
-
-        parent::__construct($rawContent, $status, $headers);
-
-        $this->setProtocolVersion($protocolVersion);
-
-        $this->data = (
-            (isset($headers['Content-Type']) && $headers['Content-Type'] == 'application/json') ?
-                json_decode($rawContent, true) : null
-        );
+        if (isset($headers['Content-Type']) && $headers['Content-Type'] == 'application/json') {
+            $this->data = json_decode($rawContent, true);
+        }
     }
 
     /**
      * @param array $rawHeaders
+     *
      * @return array $headers
      */
     protected function parseRawHeaders($rawHeaders)
@@ -76,7 +72,7 @@ class Response extends sfResponse
     }
 
     /**
-     * @return mixed
+     * @return array
      */
     public function getData()
     {
