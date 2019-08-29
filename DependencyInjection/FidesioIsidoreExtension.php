@@ -22,11 +22,11 @@ class FidesioIsidoreExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        foreach($config['client'] as $key => $value){
+        foreach ($config['client'] as $key => $value) {
             $container->setParameter("fidesio_isidore.client.$key", $value);
         }
 
-        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yml');
     }
 }

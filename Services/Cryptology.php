@@ -9,13 +9,15 @@
 
 namespace Fidesio\IsidoreBundle\Services;
 
-use Symfony\Component\Serializer\Exception\InvalidArgumentException;
+use InvalidArgumentException;
+use RuntimeException;
 
-class Cryptology
+final class Cryptology
 {
     /**
      * @param $publicKey
      * @param $cypher
+     *
      * @return string
      * @throws \Exception
      */
@@ -23,8 +25,9 @@ class Cryptology
     {
         $publicKey = base64_decode($publicKey);
 
-        if (!$publicKey)
-            throw new \Exception(openssl_error_string());
+        if (!$publicKey) {
+            throw new RuntimeException(openssl_error_string());
+        }
 
         openssl_public_encrypt(substr($cypher, 0, 21), $crypttext, $publicKey);
 
@@ -32,29 +35,32 @@ class Cryptology
     }
 
     /**
-     * @param $data
-     * @param $key
-     * @param int $base
+     * @param string $data
+     * @param string $key
+     * @param int    $base
+     *
      * @return mixed|string
      */
     public function sha1Sign($data, $key, $base = 16)
     {
         $signature = $this->hmacsha1($data, $key);
 
-        if($base === 16){
+        if ($base === 16) {
             $signature = unpack('H*', $signature);
+
             return array_pop($signature);
         }
-        if($base === 64){
+        if ($base === 64) {
             return base64_encode($signature);
         }
 
-        throw new InvalidArgumentException('Unsupported base `'.$base.'`.');
+        throw new InvalidArgumentException('Unsupported base `' . $base . '`.');
     }
 
     /**
-     * @param $data
-     * @param $key
+     * @param string $data
+     * @param string $key
+     *
      * @return string
      */
     protected static function hmacsha1($data, $key)
@@ -62,22 +68,15 @@ class Cryptology
         $blocksize = 64;
         $hashfunc = 'sha1';
 
-        if (strlen($key)>$blocksize)
+        if (strlen($key) > $blocksize) {
             $key = pack('H*', $hashfunc($key));
+        }
 
-        $key = str_pad($key,$blocksize,chr(0x00));
-        $ipad = str_repeat(chr(0x36),$blocksize);
-        $opad = str_repeat(chr(0x5c),$blocksize);
+        $key = str_pad($key, $blocksize, chr(0x00));
+        $ipad = str_repeat(chr(0x36), $blocksize);
+        $opad = str_repeat(chr(0x5c), $blocksize);
 
-        $hmac = pack(
-            'H*',$hashfunc(
-                ($key^$opad).pack(
-                    'H*',$hashfunc(
-                        ($key^$ipad).$data
-                    )
-                )
-            )
-        );
+        $hmac = pack('H*', $hashfunc(($key ^ $opad) . pack('H*', $hashfunc(($key ^ $ipad) . $data))));
 
         return $hmac;
     }

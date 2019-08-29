@@ -13,7 +13,6 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class CurlException extends HttpException
 {
-
     /**
      * @var array|int
      */
@@ -21,12 +20,12 @@ class CurlException extends HttpException
 
     /**
      * @param string $message
-     * @param mixed $info
+     * @param mixed  $info
      */
     function __construct($message, $info = null)
     {
         $this->info = $info;
-        $statusCode = !isset($this->info['response']['http_code']) ? 500 :$this->info['response']['http_code'];
+        $statusCode = !isset($this->info['response']['http_code']) ? 500 : $this->info['response']['http_code'];
         parent::__construct($statusCode, $message);
     }
 
@@ -37,5 +36,4 @@ class CurlException extends HttpException
     {
         return $this->info;
     }
-
 }

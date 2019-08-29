@@ -9,10 +9,8 @@
 
 namespace Fidesio\IsidoreBundle\ORM;
 
-
 interface StoreInterface
 {
-
     public function __toString();
 
     /**
@@ -28,7 +26,4 @@ interface StoreInterface
      * @return string
      */
     public function getStoreMetaName();
-
-
-
 }

@@ -2,15 +2,13 @@
 
 namespace Fidesio\IsidoreBundle\Services;
 
+use Exception;
 use Symfony\Component\DependencyInjection\ContainerInterface,
-    Symfony\Component\Serializer\Exception\RuntimeException as Exception,
     Fidesio\IsidoreBundle\Component\Exception\CurlException,
     Monolog\Logger,
     Cake\Utility\Inflector,
     DateTime,
-    DateTimeZone,
-    DateInterval
-    ;
+    DateInterval;
 
 /**
  * Class Auth
@@ -18,15 +16,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface,
  */
 class Auth
 {
-
     protected $login;
     protected $password;
     protected $lastRequest = null;
     protected $lastResponse = null;
 
-
     /**
-     * @var \Symfony\Component\DependencyInjection\Container
+     * @var ContainerInterface
      */
     protected $container;
 
@@ -73,8 +69,9 @@ class Auth
     {
         $user = $this->container->get('fidesio_user.user_manager')->getUser();
 
-        if(!$user)
+        if (!$user) {
             return null;
+        }
 
         $this->login = $user->getUsername();
         $this->password = $user->getPassword();
@@ -88,6 +85,7 @@ class Auth
      *
      * @param string|null $login
      * @param string|null $password
+     *
      * @return $this
      * @throws Exception
      */
@@ -100,20 +98,20 @@ class Auth
         $authResult = $client->operate('controller/Fidesio.webservice.ServiceStore--auth');
         $session->set('isidore.auth.data', $authResult);
         $encryptedCredential = $this->cryptology->rsaEncrypter($this->getPublicKey(), $this->getCredential());
-        $postData = array(
-            'identifiant' => $login ? $login : $this->getLogin(),
-            'password' => $password ? $password : $this->getPassword(),
+        $postData = [
+            'identifiant'       => $login ? $login : $this->getLogin(),
+            'password'          => $password ? $password : $this->getPassword(),
             'public_credential' => $encryptedCredential,
-            'remember' => null
-        );
+            'remember'          => null,
+        ];
 
-        try{
+        try {
             $authUser = $client->operate('controller/Fidesio.controller.Authentification--login', [], $postData, false);
-        }catch(CurlException $e){
+        } catch (CurlException $e) {
             throw new Exception('authentify: ' . $e->getMessage());
         }
 
-        if(!isset($authUser['success']) || $authUser['success'] != true){
+        if (!isset($authUser['success']) || $authUser['success'] !== true) {
             throw new Exception("Le serveur d'authentification ne répond pas. Veuillez reessayer ulterieurement.");
         }
 
@@ -141,13 +139,14 @@ class Auth
      * Reset password
      *
      * @param string $email
+     *
      * @return array
      */
     public function passwordReset($email)
     {
         $result = $this->getClient()->operate('controller/Fidesio.controller.Authentification--forgotPassword', [
-            'mail' => $email,
-            'g-recaptcha-response' => ""
+            'mail'                 => $email,
+            'g-recaptcha-response' => "",
         ]);
 
         return $result;
@@ -161,6 +160,7 @@ class Auth
         $session = $this->container->get('session');
         $session->set('isidore.auth.data', null);
         $session->set('isidore.auth.userData', null);
+
         //$this->getClient()->operate('controller/Fidesio.controller.Authentification--logout');
 
         return $this;
@@ -176,23 +176,24 @@ class Auth
         $session = $this->container->get('session');
         $data = $session->get('isidore.auth.userData');
 
-        if(!$data || !isset($data['id']))
+        if (!$data || !isset($data['id'])) {
             return false;
+        }
 
         $roles = [];
 
-        if( isset($data['profil']) ){
-            foreach($data['profil'] as $role){
+        if (isset($data['profil'])) {
+            foreach ($data['profil'] as $role) {
                 $roles[] = strtoupper(Inflector::underscore(strtolower("role_$role")));
             }
         }
 
         $userData = [
-            'id' => (int)$data['id'],
+            'id'       => (int)$data['id'],
             'username' => $data['identifiant'],
             'password' => $data['password'],
-            'email' => $data['email'],
-            'roles' => $roles,
+            'email'    => $data['email'],
+            'roles'    => $roles,
 //            'preferences' => $data['preferences'],
         ];
 
@@ -221,6 +222,7 @@ class Auth
     public function getCredential()
     {
         $session = $this->container->get('session');
+
         return $session->get('isidore.auth.credential');
     }
 
@@ -230,6 +232,7 @@ class Auth
     public function getUuid()
     {
         $res = $this->getResult();
+
         return isset($res['uuid']) ? $res['uuid'] : null;
     }
 
@@ -243,11 +246,13 @@ class Auth
 
     /**
      * @param mixed $login
+     *
      * @return $this
      */
     public function setLogin($login)
     {
         $this->login = $login;
+
         return $this;
     }
 
@@ -261,11 +266,13 @@ class Auth
 
     /**
      * @param mixed $password
+     *
      * @return $this
      */
     public function setPassword($password)
     {
         $this->password = $password;
+
         return $this;
     }
 
@@ -275,6 +282,7 @@ class Auth
     public function getTokenName()
     {
         $res = $this->getResult();
+
         return isset($res['tokenName']) ? $res['tokenName'] : null;
     }
 
@@ -284,6 +292,7 @@ class Auth
     public function getTokenDelimiter()
     {
         $res = $this->getResult();
+
         return isset($res['tokenDelimiter']) ? $res['tokenDelimiter'] : null;
     }
 
@@ -293,6 +302,7 @@ class Auth
     public function getResult()
     {
         $session = $this->container->get('session');
+
         return $session->get('isidore.auth.data');
     }
 
@@ -302,6 +312,7 @@ class Auth
     public function getPublicKey()
     {
         $res = $this->getResult();
+
         return isset($res['publicKey']) ? $res['publicKey'] : null;
     }
 
@@ -312,15 +323,18 @@ class Auth
     {
         $session = $this->container->get('session');
         if (!$session->has('isidore.auth.userData')
-            || ($authUser = $session->get('isidore.auth.userData')) == null) {
+            || ($authUser = $session->get('isidore.auth.userData')) === null) {
             return false;
-        } else if (!isset($authUser['expire_at'])) {
-            return false;
-        } else {
-            $now = new DateTime();
-            /** @var DateTime $authUser['expire_at'] */
-            return ($authUser['expire_at']->getTimestamp() > $now->getTimestamp());
         }
+
+        if (!isset($authUser['expire_at'])) {
+            return false;
+        }
+
+        $now = new DateTime();
+
+        /** @var DateTime $authUser ['expire_at'] */
+        return ($authUser['expire_at']->getTimestamp() > $now->getTimestamp());
     }
 
 }

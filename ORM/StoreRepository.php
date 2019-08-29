@@ -11,7 +11,7 @@ namespace Fidesio\IsidoreBundle\ORM;
 
 use Cake\Utility\Hash;
 use Fidesio\IsidoreBundle\Services\Client;
-use Symfony\Component\Serializer\Exception\RuntimeException as Exception;
+use Exception;
 
 class StoreRepository implements StoreRepositoryInterface, StoreInterface
 {
@@ -38,7 +38,7 @@ class StoreRepository implements StoreRepositoryInterface, StoreInterface
         $this->_storeName = $store;
 
         if (!$this->_client->getAuth()->getUserData()) {
-            throw new Exception("NOT AUTHENTICATED IN ISIDORE");
+            throw new Exception('NOT AUTHENTICATED IN ISIDORE');
         }
     }
 
@@ -61,6 +61,7 @@ class StoreRepository implements StoreRepositoryInterface, StoreInterface
      * Set store name
      *
      * @param string $store
+     *
      * @return $this
      */
     public function setStoreName($store)
@@ -74,8 +75,9 @@ class StoreRepository implements StoreRepositoryInterface, StoreInterface
      * Finds all objects in the repository.
      *
      * @param array|null $orderBy
-     * @param int|null $limit
-     * @param int|null $offset
+     * @param int|null   $limit
+     * @param int|null   $offset
+     *
      * @return array|null
      */
     public function findAll(array $orderBy = null, $limit = null, $offset = null)
@@ -84,10 +86,11 @@ class StoreRepository implements StoreRepositoryInterface, StoreInterface
     }
 
     /**
-     * @param array $criteria
+     * @param array      $criteria
      * @param array|null $orderBy
-     * @param null $limit
-     * @param null $offset
+     * @param null       $limit
+     * @param null       $offset
+     *
      * @return array|null
      * @throws Exception
      */
@@ -109,7 +112,7 @@ class StoreRepository implements StoreRepositoryInterface, StoreInterface
 
         if (!empty($orderBy)) {
             foreach ($orderBy as $property => $direction) {
-                if (!in_array(strtoupper($direction), array('ASC', 'DESC'))) {
+                if (!in_array(strtoupper($direction), ['ASC', 'DESC'])) {
                     if ($this->_client->isDebugMode()) {
                         throw new Exception('"direction" du sorter doit être soit "ASC" ou "DESC".');
                     }
@@ -139,8 +142,9 @@ class StoreRepository implements StoreRepositoryInterface, StoreInterface
     }
 
     /**
-     * @param string $property
+     * @param string       $property
      * @param string|array $value
+     *
      * @return array
      */
     protected function _prepareFilter($property, $value)
@@ -152,15 +156,16 @@ class StoreRepository implements StoreRepositoryInterface, StoreInterface
             foreach ($value as $comparison => $_value) {
                 if (in_array($comparison, ['in', 'nin'])) { // IN or NOT IN
                     $filter = [
-                        'property' => $property,
-                        'value' => $this->_checkPropertyArrayValue($property, is_array($_value) ? $_value : [$_value]),
+                        'property'   => $property,
+                        'value'      => $this->_checkPropertyArrayValue($property,
+                            is_array($_value) ? $_value : [$_value]),
                         'comparison' => $comparison,
                     ];
                 } elseif (in_array($comparison, $comparisons)) { // OTHER CLAUSE
                     if ($this->getManager()->checkProperty($property, $_value, true)) {
                         $filter = [
-                            'property' => $property,
-                            'value' => $_value,
+                            'property'   => $property,
+                            'value'      => $_value,
                             'comparison' => $comparison,
                         ];
                     }
@@ -173,13 +178,13 @@ class StoreRepository implements StoreRepositoryInterface, StoreInterface
         } elseif (is_array($value)) { // IN
             $filter = [
                 'property' => $property,
-                'value' => $this->_checkPropertyArrayValue($property, $value),
+                'value'    => $this->_checkPropertyArrayValue($property, $value),
             ];
         } else { // EQUAL
             if ($this->getManager()->checkProperty($property, $value, true)) {
                 $filter = [
                     'property' => $property,
-                    'value' => $value,
+                    'value'    => $value,
                 ];
             }
         }
@@ -189,16 +194,19 @@ class StoreRepository implements StoreRepositoryInterface, StoreInterface
 
     /**
      * @param string $property
-     * @param array $value
+     * @param array  $value
+     *
      * @return array
      */
     protected function _checkPropertyArrayValue($property, array $value = [])
     {
-        $values = array_map(function ($v) use ($property) {
-            if ($this->getManager()->checkProperty($property, $v, true)) {
-                return $v;
-            }
-        }, $value);
+        $values = array_map(
+            function ($v) use ($property) {
+                if ($this->getManager()->checkProperty($property, $v, true)) {
+                    return $v;
+                }
+            }, $value
+        );
 
         return $values;
     }
@@ -216,15 +224,16 @@ class StoreRepository implements StoreRepositoryInterface, StoreInterface
 
     /**
      * @param string $action
-     * @param array $criteria
-     * @param array $postData
+     * @param array  $criteria
+     * @param array  $postData
+     *
      * @return array|void
      * @throws Exception
      */
     public function operate($action = '', array $criteria = [], array $postData = [])
     {
         if (!$this->_client->getAuth()->getUserData()) {
-            throw new Exception("NOT AUTHENTICATED IN ISIDORE");
+            throw new Exception('NOT AUTHENTICATED IN ISIDORE');
         }
 
         return $this->getManager()->operate($action, $criteria, $postData);
@@ -233,8 +242,9 @@ class StoreRepository implements StoreRepositoryInterface, StoreInterface
     /**
      * Finds a single object by a set of criteria.
      *
-     * @param array $criteria The criteria.
+     * @param array      $criteria The criteria.
      * @param array|null $orderBy
+     *
      * @return array|object
      */
     public function findOneBy(array $criteria, array $orderBy = null)
@@ -261,8 +271,9 @@ class StoreRepository implements StoreRepositoryInterface, StoreInterface
      * Data to choices array
      *
      * @param string|null $type list type
-     * @param string $key field used as array key
-     * @param string $displayField displayed field used for label
+     * @param string      $key field used as array key
+     * @param string      $displayField displayed field used for label
+     *
      * @return array
      */
     public function toChoices($type = null, $key = '_id', $displayField = '_nom')
@@ -271,7 +282,7 @@ class StoreRepository implements StoreRepositoryInterface, StoreInterface
 
         if ($this->getTotal()) {
             foreach ($this->_result['data'] as $row) {
-                if (isset($row[$key]) && isset($row[$displayField])) {
+                if (isset($row[$key], $row[$displayField])) {
                     switch ($type) {
                         case 'simple':
                             $choices[] = $row[$displayField];

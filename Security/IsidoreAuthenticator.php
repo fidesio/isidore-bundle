@@ -17,14 +17,10 @@ use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationExc
 use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Http\Authentication\SimpleFormAuthenticatorInterface;
-
-use Fidesio\IsidoreBundle\Security\User\IsidoreApiUser;
 use Fidesio\IsidoreBundle\Security\User\IsidoreApiUserProvider;
-
 
 class IsidoreAuthenticator implements SimpleFormAuthenticatorInterface
 {
-
     /**
      * @var UserPasswordEncoderInterface
      */
@@ -39,20 +35,22 @@ class IsidoreAuthenticator implements SimpleFormAuthenticatorInterface
     }
 
     /**
-     * @param TokenInterface $token
+     * @param TokenInterface        $token
      * @param UserProviderInterface $userProvider
-     * @param $providerKey
+     * @param string                $providerKey
+     *
      * @return UsernamePasswordToken
      */
     public function authenticateToken(TokenInterface $token, UserProviderInterface $userProvider, $providerKey)
     {
         try {
-            if($userProvider instanceof IsidoreApiUserProvider)
+            if ($userProvider instanceof IsidoreApiUserProvider) {
                 $user = $userProvider->loadUser($token->getUsername(), $token->getCredentials());
-            else
+            } else {
                 $user = $userProvider->loadUserByUsername($token->getUsername());
+            }
         } catch (UsernameNotFoundException $e) {
-            throw new CustomUserMessageAuthenticationException("Identifiant ou mot de passe incorrect. Veuillez réessayer.");
+            throw new CustomUserMessageAuthenticationException('Identifiant ou mot de passe incorrect. Veuillez réessayer.');
         }
 
         $passwordValid = $this->encoder->isPasswordValid($user, $token->getCredentials());
@@ -66,30 +64,31 @@ class IsidoreAuthenticator implements SimpleFormAuthenticatorInterface
             );
         }
 
-        throw new CustomUserMessageAuthenticationException("Identifiant ou mot de passe incorrect. Veuillez réessayer.");
+        throw new CustomUserMessageAuthenticationException('Identifiant ou mot de passe incorrect. Veuillez réessayer.');
     }
 
     /**
      * @param TokenInterface $token
-     * @param $providerKey
+     * @param                $providerKey
+     *
      * @return bool
      */
     public function supportsToken(TokenInterface $token, $providerKey)
     {
         return $token instanceof UsernamePasswordToken
-        && $token->getProviderKey() === $providerKey;
+            && $token->getProviderKey() === $providerKey;
     }
 
     /**
      * @param Request $request
-     * @param $username
-     * @param $password
-     * @param $providerKey
+     * @param string  $username
+     * @param string  $password
+     * @param string  $providerKey
+     *
      * @return UsernamePasswordToken
      */
     public function createToken(Request $request, $username, $password, $providerKey)
     {
         return new UsernamePasswordToken($username, $password, $providerKey);
     }
-
 }

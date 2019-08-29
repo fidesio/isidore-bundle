@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response as sfResponse;
  * Class Response
  * @package Fidesio\IsidoreBundle\Component\Curl
  */
-class Response extends sfResponse
+final class Response extends sfResponse
 {
     /**
      * @var array
@@ -24,7 +24,7 @@ class Response extends sfResponse
      *
      * @throws \InvalidArgumentException When the HTTP status code is not valid
      */
-    public function __construct($content = '', $status = self::HTTP_OK, $headers = [])
+    public function __construct($content = '', $status = self::HTTP_OK, array $headers = [])
     {
         if (!empty($content)) {
             $res = explode("\r\n\r\n", $content);
@@ -44,10 +44,10 @@ class Response extends sfResponse
             parent::__construct($rawContent, $status, $headers);
 
             $this->setProtocolVersion($protocolVersion);
-        }
 
-        if (isset($headers['Content-Type']) && $headers['Content-Type'] == 'application/json') {
-            $this->data = json_decode($rawContent, true);
+            if (isset($headers['Content-Type']) && $headers['Content-Type'] == 'application/json') {
+                $this->data = json_decode($rawContent, true);
+            }
         }
     }
 
@@ -56,11 +56,11 @@ class Response extends sfResponse
      *
      * @return array $headers
      */
-    protected function parseRawHeaders($rawHeaders)
+    protected function parseRawHeaders(array $rawHeaders)
     {
         $headers = [];
 
-        if (sizeof($rawHeaders)) {
+        if (count($rawHeaders)) {
             foreach ($rawHeaders as $rawHeader) {
                 if (preg_match('@^([a-zA-Z\-\_]+)\:\s(.*)@', $rawHeader, $matches)) {
                     $headers[$matches[1]] = $matches[2];
