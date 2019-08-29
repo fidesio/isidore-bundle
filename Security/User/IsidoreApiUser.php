@@ -14,13 +14,11 @@ use Symfony\Component\Security\Core\User\EquatableInterface;
 
 class IsidoreApiUser implements IsidoreApiUserInterface, UserInterface, EquatableInterface
 {
-
     protected $id;
     protected $email;
     protected $username;
     protected $password;
     protected $roles;
-//    protected $preferences;
 
     public function __construct(array $userData = [])
     {
@@ -29,24 +27,26 @@ class IsidoreApiUser implements IsidoreApiUserInterface, UserInterface, Equatabl
         $this->username = isset($userData['username']) ? $userData['username'] : null;
         $this->password = isset($userData['password']) ? $userData['password'] : null;
         $this->roles = isset($userData['roles']) ? $userData['roles'] : null;
-//        $this->preferences = isset($userData['preferences']) ? $userData['preferences'] : null;
     }
 
     public function setEmail($email)
     {
         $this->email = $email;
+
         return $this;
     }
 
     public function setUsername($username)
     {
         $this->username = $username;
+
         return $this;
     }
 
     public function setPassword($password)
     {
         $this->password = $password;
+
         return $this;
     }
 
@@ -91,7 +91,7 @@ class IsidoreApiUser implements IsidoreApiUserInterface, UserInterface, Equatabl
 
     public function isEqualTo(UserInterface $user)
     {
-        if (!$user instanceof IsidoreApiUser) {
+        if (!$user instanceof self) {
             return false;
         }
 
@@ -105,5 +105,4 @@ class IsidoreApiUser implements IsidoreApiUserInterface, UserInterface, Equatabl
 
         return true;
     }
-
 }

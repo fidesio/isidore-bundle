@@ -9,13 +9,10 @@
 
 namespace Fidesio\IsidoreBundle\Services;
 
-use Fidesio\IsidoreBundle\Component\Exception\CurlException;
+use Exception;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\Serializer\Exception\RuntimeException as Exception;
-use Fidesio\IsidoreBundle\Services\Client;
-use Fidesio\IsidoreBundle\Services\Auth;
 
-class FileManager
+final class FileManager
 {
     /**
      * @var ContainerInterface
@@ -44,22 +41,23 @@ class FileManager
     }
 
     /**
-     * @param $filepath
+     * @param string      $filepath
      * @param string|null $type set mime type
-     * @return mixed
+     *
+     * @return array|null
      */
     public function send($filepath, $type = null)
     {
-        if(empty($type)){
+        if (empty($type)) {
             $finfo = new \finfo(FILEINFO_MIME_TYPE);
             $type = $finfo->file($filepath);
         }
 
-        $getData = array();
+        $getData = [];
         $url = 'upload/';
-        $postData = array(
-            '|file[]' => '@' . $filepath . ";type=".trim($type, ';').";"
-        );
+        $postData = [
+            '|file[]' => '@' . $filepath . ';type=' . trim($type, ';') . ';',
+        ];
         $addToken = true;
 
         if (!is_string($filepath)) {
@@ -68,38 +66,39 @@ class FileManager
 
         $this->getClient()->buildURL($url, $getData, $postData, $addToken);
         $ch = curl_init();
-        curl_setopt_array($ch, array(
-            CURLOPT_URL => $url,
+        curl_setopt_array($ch, [
+            CURLOPT_URL            => $url,
             CURLOPT_RETURNTRANSFER => true,
-            CURLINFO_HEADER_OUT => true,
-            CURLOPT_HEADER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $postData,
-        ));
+            CURLINFO_HEADER_OUT    => true,
+            CURLOPT_HEADER         => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $postData,
+        ]);
         $res = explode("\r\n\r\n", curl_exec($ch));
         $info = curl_getinfo($ch);
-        $info = array(
-            'request' => array(
-                'url' => $info['url'],
-                'header' => curl_getinfo($ch, CURLINFO_HEADER_OUT),
-                'post_data' => json_encode($postData),
-                'content_type' => $info['content_type']
-            ),
-            'response' => array(
-                'header' => $res[0],
+        $info = [
+            'request'  => [
+                'url'          => $info['url'],
+                'header'       => curl_getinfo($ch, CURLINFO_HEADER_OUT),
+                'post_data'    => json_encode($postData),
+                'content_type' => $info['content_type'],
+            ],
+            'response' => [
+                'header'    => $res[0],
                 'http_code' => $info['http_code'],
-                'data' => json_decode($res[1], true)
-            ),
-        );
+                'data'      => json_decode($res[1], true),
+            ],
+        ];
 
         $this->getClient()->setLastRequest($info['request']);
         $this->getClient()->setLastResponse($info['response']);
 
-        if($info['response']['http_code'] != '200'){
+        if ($info['response']['http_code'] != '200') {
             $this->getClient()->getLogger()->critical('CURL Request failed');
 
-            if($this->getClient()->isDebugMode())
+            if ($this->getClient()->isDebugMode()) {
                 throw new Exception('CURL Request failed.');
+            }
         }
 
         curl_close($ch);

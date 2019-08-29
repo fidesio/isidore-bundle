@@ -9,10 +9,8 @@
 
 namespace Fidesio\IsidoreBundle\ORM;
 
-
 interface StoreRepositoryInterface
 {
-
     /**
      * Finds all objects in the repository.
      *
@@ -36,8 +34,8 @@ interface StoreRepositoryInterface
      * Finds a single object by a set of criteria.
      *
      * @param array $criteria The criteria.
+     *
      * @return array|object
      */
     public function findOneBy(array $criteria);
-
 }

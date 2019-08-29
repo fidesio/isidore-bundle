@@ -9,10 +9,8 @@
 
 namespace Fidesio\IsidoreBundle\Security\User;
 
-
 interface IsidoreApiUserInterface
 {
-
     public function setEmail($email);
 
     public function setUsername($username);
@@ -22,7 +20,4 @@ interface IsidoreApiUserInterface
     public function getId();
 
     public function getEmail();
-
-//    public function getPreference();
-
 }

@@ -19,7 +19,6 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 class IsidoreApiUserProvider implements UserProviderInterface
 {
-
     /**
      * @var ContainerInterface
      */
@@ -33,36 +32,40 @@ class IsidoreApiUserProvider implements UserProviderInterface
     /**
      * @param $username
      * @param $password
+     *
      * @return IsidoreApiUser
      */
     public function loadUser($username, $password)
     {
-        try{
+        try {
             $userData = $this->container->get('fidesio_isidore.service.auth')->getUserData();
             $apiUsername = $this->container->getParameter('fidesio_isidore.client.login');
 
-            if(
+            if (
                 empty($userData) ||
                 (isset($userData['username']) && ($userData['username'] == $apiUsername || @$userData['username'] != $username))
-            ){
+            ) {
                 $auth = $this->container->get('fidesio_isidore.service.auth')->authentify($username, $password);
                 $userData = $auth->getUserData();
             }
 
-            if(!empty($userData)){
+            if (!empty($userData)) {
                 return new IsidoreApiUser($userData);
             }
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             throw new UsernameNotFoundException($e->getMessage());
         }
 
         throw new UsernameNotFoundException("Identifiant ou mot de passe incorrect. Veuillez réessayer.");
     }
 
-    public function loadUserByUsername($username){}
+    public function loadUserByUsername($username)
+    {
+    }
 
     /**
      * @param UserInterface $user
+     *
      * @return IsidoreApiUser
      */
     public function refreshUser(UserInterface $user)
@@ -72,16 +75,17 @@ class IsidoreApiUserProvider implements UserProviderInterface
                 sprintf('Instances of "%s" are not supported.', get_class($user))
             );
         }
+
         return $this->loadUser($user->getUsername(), $user->getPassword());
     }
 
     /**
      * @param string $class
+     *
      * @return bool
      */
     public function supportsClass($class)
     {
         return $class === 'Fidesio\IsidoreBundle\Security\User\IsidoreApiUser';
     }
-
 }
