@@ -1,8 +1,3 @@
-#parameters:
-#    fidesio_isidore.client.url: http://seth.lan/ligueparis/trunk/web/ligueparis_isidore/
-#    fidesio_isidore.client.login: admin
-#    fidesio_isidore.client.password: admin
-
 services:
     fidesio_isidore.service.cryptology:
         class: Fidesio\IsidoreBundle\Services\Cryptology
@@ -30,9 +25,9 @@ services:
             - @fidesio_isidore.service.client
 
     fidesio_isidore.file_manager:
-            class: Fidesio\IsidoreBundle\Services\FileManager
-            arguments:
-                - @service_container
+        class: Fidesio\IsidoreBundle\Services\FileManager
+        arguments:
+            - @fidesio_isidore.service.client
 
     fidesio_isidore.api_user_provider:
         class: Fidesio\IsidoreBundle\Security\User\IsidoreApiUserProvider
@@ -45,7 +40,4 @@ services:
 
     fidesio_isidore.service.cache:
         class: Fidesio\IsidoreBundle\Services\Cache
-        arguments:
-            ["%kernel.root_dir%/cache/%kernel.environment%/isidore"]
-
-
+        arguments: ["%kernel.root_dir%/cache/%kernel.environment%/isidore"]

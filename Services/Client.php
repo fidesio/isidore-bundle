@@ -2,10 +2,12 @@
 
 namespace Fidesio\IsidoreBundle\Services;
 
-use Symfony\Component\DependencyInjection\ContainerInterface,
-    Exception,
-    Monolog\Logger,
-    Fidesio\IsidoreBundle\Component\Curl\Response;
+use Exception;
+use Fidesio\IsidoreBundle\Component\Curl\Response;
+use InvalidArgumentException;
+use Psr\Log\LoggerInterface;
+use RuntimeException;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Class Client
@@ -17,8 +19,8 @@ final class Client
     protected $authBasicUser;
     protected $authBasicPass;
     protected $stores = [];
-    protected $lastRequest = null;
-    protected $lastResponse = null;
+    protected $lastRequest;
+    protected $lastResponse;
 
     /**
      * @var ContainerInterface
@@ -26,7 +28,7 @@ final class Client
     protected $container;
 
     /**
-     * @var Logger
+     * @var LoggerInterface
      */
     protected $logger;
 
@@ -36,7 +38,7 @@ final class Client
     protected $debug;
 
 
-    public function __construct(ContainerInterface $container, Logger $logger)
+    public function __construct(ContainerInterface $container, LoggerInterface $logger)
     {
         $this->container = $container;
         $this->logger = $logger;
@@ -165,19 +167,19 @@ final class Client
         if (!is_string($url)) {
             $this->logger->critical('$url doit être une chaîne de caractères.');
             if ($this->debug) {
-                throw new Exception('$url doit être une chaîne de caractères.');
+                throw new InvalidArgumentException('$url doit être une chaîne de caractères.');
             }
         }
         if (!is_array($getData)) {
             $this->logger->critical('$getData doit être un tableau.');
             if ($this->debug) {
-                throw new Exception('$getData doit être un tableau.');
+                throw new InvalidArgumentException('$getData doit être un tableau.');
             }
         }
         if (!is_array($postData)) {
             $this->logger->critical('$postData doit être un tableau.');
             if ($this->debug) {
-                throw new Exception('$postData doit être un tableau.');
+                throw new InvalidArgumentException('$postData doit être un tableau.');
             }
         }
 
@@ -221,15 +223,16 @@ final class Client
             ],
         ];
 
+        curl_close($ch);
+
         $this->lastRequest = $info['request'];
         $this->lastResponse = $info['response'];
-        if ($info['response']['http_code'] != '200') {
+        if ($info['response']['http_code'] !== 200) {
             $message = (isset($data['exception']['message']) ? $data['exception']['message'] : 'CURL Request failed: ' . $url);
             $code = isset($data['exception']['code']) ? $data['exception']['code'] : 0;
             $this->logger->critical($message);
             if ($this->isDebugMode()) {
-                curl_close($ch);
-                throw new Exception($message, $code);
+                throw new RuntimeException($message, $code);
             }
         }
 
@@ -243,8 +246,6 @@ final class Client
                 $data['code'] = $data['exception']['code'];
             }
         }
-
-        curl_close($ch);
 
         return $data;
     }

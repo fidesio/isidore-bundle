@@ -9,35 +9,26 @@
 
 namespace Fidesio\IsidoreBundle\Services;
 
-use Exception;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use CURLFile;
+use finfo;
+use InvalidArgumentException;
+use RuntimeException;
 
 final class FileManager
 {
     /**
-     * @var ContainerInterface
+     * @var Client
      */
-    protected $container;
-
-    public function __construct(ContainerInterface $container)
-    {
-        $this->container = $container;
-    }
+    protected $client;
 
     /**
-     * @return Client
+     * FileManager constructor.
+     *
+     * @param Client $client
      */
-    public function getClient()
+    public function __construct(Client $client)
     {
-        return $this->container->get('fidesio_isidore.service.client');
-    }
-
-    /**
-     * @return Auth
-     */
-    public function getAuth()
-    {
-        return $this->container->get('fidesio_isidore.service.auth');
+        $this->client = $client;
     }
 
     /**
@@ -49,22 +40,21 @@ final class FileManager
     public function send($filepath, $type = null)
     {
         if (empty($type)) {
-            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
             $type = $finfo->file($filepath);
+        }
+
+        if (!is_string($filepath)) {
+            throw new InvalidArgumentException('$file_url doit être une chaîne de caractères.');
         }
 
         $getData = [];
         $url = 'upload/';
-        $postData = [
-            '|file[]' => '@' . $filepath . ';type=' . trim($type, ';') . ';',
-        ];
+        $postData = ['|file[]' => new CURLFile($filepath, trim($type, ';'))];
         $addToken = true;
 
-        if (!is_string($filepath)) {
-            throw new Exception('$file_url doit être une chaîne de caractères.');
-        }
+        $this->client->buildURL($url, $getData, $postData, $addToken);
 
-        $this->getClient()->buildURL($url, $getData, $postData, $addToken);
         $ch = curl_init();
         curl_setopt_array($ch, [
             CURLOPT_URL            => $url,
@@ -72,9 +62,20 @@ final class FileManager
             CURLINFO_HEADER_OUT    => true,
             CURLOPT_HEADER         => true,
             CURLOPT_POST           => true,
+            CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_POSTFIELDS     => $postData,
         ]);
+
+        if ($this->client->getAuthBasicUser() && $this->client->getAuthBasicPass()) {
+            curl_setopt(
+                $ch,
+                CURLOPT_USERPWD,
+                $this->client->getAuthBasicUser() . ':' . $this->client->getAuthBasicPass()
+            );
+        }
+
         $res = explode("\r\n\r\n", curl_exec($ch));
+
         $info = curl_getinfo($ch);
         $info = [
             'request'  => [
@@ -89,19 +90,18 @@ final class FileManager
                 'data'      => json_decode($res[1], true),
             ],
         ];
+        curl_close($ch);
 
-        $this->getClient()->setLastRequest($info['request']);
-        $this->getClient()->setLastResponse($info['response']);
+        $this->client->setLastRequest($info['request']);
+        $this->client->setLastResponse($info['response']);
 
-        if ($info['response']['http_code'] != '200') {
-            $this->getClient()->getLogger()->critical('CURL Request failed');
+        if ($info['response']['http_code'] !== 200) {
+            $this->client->getLogger()->critical('CURL Request failed' . $url);
 
-            if ($this->getClient()->isDebugMode()) {
-                throw new Exception('CURL Request failed.');
+            if ($this->client->isDebugMode()) {
+                throw new RuntimeException('CURL Request failed.' . $url);
             }
         }
-
-        curl_close($ch);
 
         $jsonData = json_decode($res[2], true);
 
