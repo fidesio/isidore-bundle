@@ -40,4 +40,5 @@ services:
 
     fidesio_isidore.service.cache:
         class: Fidesio\IsidoreBundle\Services\Cache
-        arguments: ["%kernel.root_dir%/cache/%kernel.environment%/isidore"]
+        arguments:
+            - @service_container

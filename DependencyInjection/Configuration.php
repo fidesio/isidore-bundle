@@ -35,6 +35,13 @@ class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                 ->end()
+                ->arrayNode('cache')
+                    ->children()
+                        ->booleanNode('enable')->defaultFalse()->end()
+                        ->enumNode('type')->values(['file', 'redis'])->end()
+                        ->scalarNode('redis')->end()
+                    ->end()
+                ->end()
             ->end()
         ;
 

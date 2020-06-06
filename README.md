@@ -45,4 +45,8 @@ fidesio_isidore:
         password: api_password # Isidore api password
         auth_basic_user: auth_basic_user # Application Basic Authorization `user` if needed / not required
         auth_basic_pass: auth_basic_pass # Application Basic Authorization `password` if needed / not required
+    cache:
+        enable: true|false
+        type: file|redis
+        redis: redis://localhost:6379/3 # redis DSN
 ```
