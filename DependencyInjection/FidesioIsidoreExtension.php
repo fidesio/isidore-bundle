@@ -25,6 +25,9 @@ class FidesioIsidoreExtension extends Extension
         foreach ($config['client'] as $key => $value) {
             $container->setParameter("fidesio_isidore.client.$key", $value);
         }
+        foreach($config['cache'] as $key => $value){
+            $container->setParameter("fidesio_isidore.cache.$key", $value);
+        }
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yml');
