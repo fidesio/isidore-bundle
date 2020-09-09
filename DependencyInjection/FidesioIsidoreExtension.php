@@ -25,8 +25,17 @@ class FidesioIsidoreExtension extends Extension
         foreach ($config['client'] as $key => $value) {
             $container->setParameter("fidesio_isidore.client.$key", $value);
         }
-        foreach($config['cache'] as $key => $value){
-            $container->setParameter("fidesio_isidore.cache.$key", $value);
+
+        if (isset($config['cache']) {
+            foreach($config['cache'] as $key => $value){
+                $container->setParameter("fidesio_isidore.cache.$key", $value);
+            }
+        } else {
+            /**
+             * If the cache key is not defined in parameters, file cache is used by default
+             */
+            $container->setParameter('fidesio_isidore.cache.enable', true);
+            $container->setParameter('fidesio_isidore.cache.type', 'file');
         }
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
